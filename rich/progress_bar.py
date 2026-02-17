@@ -11,6 +11,20 @@ from .measure import Measurement
 from .segment import Segment
 from .style import Style, StyleType
 
+# Manual Instrumentation
+import atexit
+
+COVERAGE_COUNTS = [0] * 26 
+
+def report_coverage():
+    print("Branch Coverage Report for Function 4:")
+    print("-" * 52)
+    for idx, count in enumerate(COVERAGE_COUNTS):
+        status = "Covered" if count > 0 else "MISSED"
+        print(f"Branch {idx}: {status} (Hits: {count})")
+    print("="*52)
+atexit.register(report_coverage)
+
 # Number of characters before 'pulse' animation repeats
 PULSE_SIZE = 20
 
@@ -160,42 +174,97 @@ class ProgressBar(JupyterMixin):
         ascii = options.legacy_windows or options.ascii_only
         should_pulse = self.pulse or self.total is None
         if should_pulse:
+            COVERAGE_COUNTS[0] += 1
             yield from self._render_pulse(console, width, ascii=ascii)
             return
+        else:
+            COVERAGE_COUNTS[1] += 1
 
-        completed: Optional[float] = (
-            min(self.total, max(0, self.completed)) if self.total is not None else None
-        )
+        if self.total is not None:
+             COVERAGE_COUNTS[2] += 1
+             completed = min(self.total, max(0, self.completed))
+        else:
+             COVERAGE_COUNTS[3] += 1
+             completed = None
 
-        bar = "-" if ascii else "━"
-        half_bar_right = " " if ascii else "╸"
-        half_bar_left = " " if ascii else "╺"
-        complete_halves = (
-            int(width * 2 * completed / self.total)
-            if self.total and completed is not None
-            else width * 2
-        )
+        if ascii:
+            COVERAGE_COUNTS[4] += 1
+            bar = "-"
+        else:
+            COVERAGE_COUNTS[5] += 1
+            bar = "━"
+
+        if ascii:
+            COVERAGE_COUNTS[6] += 1
+            half_bar_right = " "
+        else:
+            COVERAGE_COUNTS[7] += 1
+            half_bar_right = "╸"
+
+        if ascii:
+            COVERAGE_COUNTS[8] += 1
+            half_bar_left = " "
+        else:
+            COVERAGE_COUNTS[9] += 1
+            half_bar_left = "╺"
+
+        if self.total and completed is not None:
+            COVERAGE_COUNTS[10] += 1
+            complete_halves = int(width * 2 * completed / self.total)
+        else:
+            COVERAGE_COUNTS[11] += 1
+            complete_halves = width * 2
+
         bar_count = complete_halves // 2
         half_bar_count = complete_halves % 2
         style = console.get_style(self.style)
         is_finished = self.total is None or self.completed >= self.total
-        complete_style = console.get_style(
-            self.finished_style if is_finished else self.complete_style
-        )
+        
+        if is_finished:
+            COVERAGE_COUNTS[12] += 1
+            target_style_name = self.finished_style
+        else:
+            COVERAGE_COUNTS[13] += 1
+            target_style_name = self.complete_style
+        complete_style = console.get_style(target_style_name)
+
+
         _Segment = Segment
         if bar_count:
+            COVERAGE_COUNTS[14] += 1
             yield _Segment(bar * bar_count, complete_style)
+        else:
+            COVERAGE_COUNTS[15] += 1
+
         if half_bar_count:
+            COVERAGE_COUNTS[16] += 1
             yield _Segment(half_bar_right * half_bar_count, complete_style)
+        else:
+            COVERAGE_COUNTS[17] += 1
 
         if not console.no_color:
+            COVERAGE_COUNTS[18] += 1
             remaining_bars = width - bar_count - half_bar_count
+            
             if remaining_bars and console.color_system is not None:
+                COVERAGE_COUNTS[20] += 1
+                
                 if not half_bar_count and bar_count:
+                    COVERAGE_COUNTS[22] += 1
                     yield _Segment(half_bar_left, style)
                     remaining_bars -= 1
+                else:
+                    COVERAGE_COUNTS[23] += 1 
+
                 if remaining_bars:
+                    COVERAGE_COUNTS[24] += 1
                     yield _Segment(bar * remaining_bars, style)
+                else:
+                    COVERAGE_COUNTS[25] += 1 
+            else:
+                COVERAGE_COUNTS[21] += 1 
+        else:
+            COVERAGE_COUNTS[19] += 1
 
     def __rich_measure__(
         self, console: Console, options: ConsoleOptions
@@ -221,3 +290,5 @@ if __name__ == "__main__":  # pragma: no cover
         time.sleep(0.05)
     console.show_cursor(True)
     console.print()
+
+    report_coverage()
