@@ -108,6 +108,52 @@ class Lines:
     def pop(self, index: int = -1) -> "Text":
         return self._lines.pop(index)
 
+    def _justify_left(self, width: int, overflow: "OverflowMethod") -> None:
+        for line in self._lines:
+            line.truncate(width, overflow=overflow, pad=True)
+
+
+    def _justify_center(self, width: int, overflow: "OverflowMethod") -> None:
+        for line in self._lines:
+            line.rstrip()
+            line.truncate(width, overflow=overflow)
+            line.pad_left((width - cell_len(line.plain)) // 2)
+            line.pad_right(width - cell_len(line.plain))
+
+
+    def _justify_right(self, width: int, overflow: "OverflowMethod") -> None:
+        for line in self._lines:
+            line.rstrip()
+            line.truncate(width, overflow=overflow)
+            line.pad_left(width - cell_len(line.plain))
+
+
+    def _justify_full(self, console: "Console", width: int) -> None:
+        from .text import Text
+        for line_index, line in enumerate(self._lines):
+            if line_index == len(self._lines) - 1:
+                break
+            words = line.split(" ")
+            words_size = sum(cell_len(word.plain) for word in words)
+            num_spaces = len(words) - 1
+            spaces = [1 for _ in range(num_spaces)]
+            index = 0
+            if spaces:
+                while words_size + num_spaces < width:
+                    spaces[len(spaces) - index - 1] += 1
+                    num_spaces += 1
+                    index = (index + 1) % len(spaces)
+            tokens: List[Text] = []
+            for index, (word, next_word) in enumerate(zip_longest(words, words[1:])):
+                tokens.append(word)
+                if index < len(spaces):
+                    style = word.get_style_at_offset(console, -1)
+                    next_style = next_word.get_style_at_offset(console, 0)
+                    space_style = style if style == next_style else line.style
+                    tokens.append(Text(" " * spaces[index], style=space_style))
+            self[line_index] = Text("").join(tokens)
+
+
     def justify(
         self,
         console: "Console",
@@ -127,41 +173,10 @@ class Lines:
         from .text import Text
 
         if justify == "left":
-            for line in self._lines:
-                line.truncate(width, overflow=overflow, pad=True)
+            self._justify_left(width, overflow)
         elif justify == "center":
-            for line in self._lines:
-                line.rstrip()
-                line.truncate(width, overflow=overflow)
-                line.pad_left((width - cell_len(line.plain)) // 2)
-                line.pad_right(width - cell_len(line.plain))
+            self._justify_center(width, overflow)
         elif justify == "right":
-            for line in self._lines:
-                line.rstrip()
-                line.truncate(width, overflow=overflow)
-                line.pad_left(width - cell_len(line.plain))
+            self._justify_right(width, overflow)
         elif justify == "full":
-            for line_index, line in enumerate(self._lines):
-                if line_index == len(self._lines) - 1:
-                    break
-                words = line.split(" ")
-                words_size = sum(cell_len(word.plain) for word in words)
-                num_spaces = len(words) - 1
-                spaces = [1 for _ in range(num_spaces)]
-                index = 0
-                if spaces:
-                    while words_size + num_spaces < width:
-                        spaces[len(spaces) - index - 1] += 1
-                        num_spaces += 1
-                        index = (index + 1) % len(spaces)
-                tokens: List[Text] = []
-                for index, (word, next_word) in enumerate(
-                    zip_longest(words, words[1:])
-                ):
-                    tokens.append(word)
-                    if index < len(spaces):
-                        style = word.get_style_at_offset(console, -1)
-                        next_style = next_word.get_style_at_offset(console, 0)
-                        space_style = style if style == next_style else line.style
-                        tokens.append(Text(" " * spaces[index], style=space_style))
-                self[line_index] = Text("").join(tokens)
+            self._justify_full(console, width)
