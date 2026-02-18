@@ -8,6 +8,19 @@ from .cells import cell_len, chop_cells
 
 re_word = re.compile(r"\s*\S+\s*")
 
+import atexit
+COVERAGE_COUNTS = [0] * 11
+
+def report_coverage():
+    print("BRANCH COVERAGE REPORT FOR DIVIDE_LINE: ")
+    print("-" * 52)
+
+    for idx, count in enumerate(COVERAGE_COUNTS):
+        status = "Covered" if count > 0 else "MISSED"
+        print(f"Branch {idx}: {status} (Hits: {count})")
+    print("=" * 52)
+
+atexit.register(report_coverage)
 
 def words(text: str) -> Iterable[tuple[int, int, str]]:
     """Yields each word from the text as a tuple
@@ -48,32 +61,44 @@ def divide_line(text: str, width: int, fold: bool = True) -> list[int]:
 
         if word_fits_remaining_space:
             # Simplest case - the word fits within the remaining width for this line.
+            COVERAGE_COUNTS[0] += 1
             cell_offset += _cell_len(word)
         else:
+            COVERAGE_COUNTS[1] += 1
             # Not enough space remaining for this word on the current line.
             if word_length > width:
+                COVERAGE_COUNTS[2] += 1
                 # The word doesn't fit on any line, so we can't simply
                 # place it on the next line...
                 if fold:
+                    COVERAGE_COUNTS[3] += 1
                     # Fold the word across multiple lines.
                     folded_word = chop_cells(word, width=width)
                     for last, line in loop_last(folded_word):
                         if start:
+                            COVERAGE_COUNTS[4] += 1
                             append(start)
                         if last:
+                            COVERAGE_COUNTS[5] += 1
                             cell_offset = _cell_len(line)
                         else:
+                            COVERAGE_COUNTS[6] += 1
                             start += len(line)
                 else:
+                    COVERAGE_COUNTS[7] += 1
                     # Folding isn't allowed, so crop the word.
                     if start:
+                        COVERAGE_COUNTS[8] += 1
                         append(start)
                     cell_offset = _cell_len(word)
             elif cell_offset and start:
+                COVERAGE_COUNTS[9] += 1
                 # The word doesn't fit within the remaining space on the current
                 # line, but it *can* fit on to the next (empty) line.
                 append(start)
                 cell_offset = _cell_len(word)
+            else:
+                COVERAGE_COUNTS[10] += 1
 
     return break_positions
 
@@ -91,3 +116,5 @@ if __name__ == "__main__":  # pragma: no cover
 
     console.rule()
     console.print("アプリケーションは1670万色を使用でき")
+
+    report_coverage()
