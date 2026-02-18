@@ -129,7 +129,10 @@ The inner function `align_text` (left/center/right and the `if excess_space` / `
 
 This strategy is quite obvious with this function. Justification has 4 modes and all of them are performed in one function right now. Extracting these branches into 4 separate methods (`_justify_left`, `_justify_right`, `_justify_center` `_justify_full`) will leave us with cyclomatic complexity of ~5. `_justify_full` will still be the most complex, but its CCN should be under 10.
 
-**Estimated impact of refactoring** (lower CC, but other drawbacks?): **Lower CC** in the main method. **Possible drawbacks:** four extra method to maintain; behaviour unchanged.
+**Refactored function** can be found [here](https://github.com/DD2480-2026-Group-8/rich-Assignment-3/blob/anna-extra/rich/containers.py) 
+
+
+**Impact of refactoring**: **Much lower CC** in the main method - 5 compared to 17 (CCN is obtained via lizard). **Drawbacks:** four extra method to maintain; `_justify_full` still has a large CCN - 10; behaviour unchanged.
 
 **Function 4 (ProgressBar `__rich_console__`):** Extract character selection, calculation, and rendering logic.
 
@@ -148,7 +151,6 @@ git diff ...
 We used **coverage.py** as our coverage tool to measure branch coverage.
 
 The tool is well documented: the official docs clearly explain common workflows (running tests under coverage, generating terminal/HTML reports, enabling branch coverage, and configuration via `.coveragerc`). Integration with our build environment was straightforward. We installed it in our Python virtual environment, ran the test suite with `coverage run --branch -m pytest`, and generated reports with `coverage html`.
-
 
 ### Your own coverage tool
 
@@ -177,15 +179,45 @@ The results are largely consistent with `coverage.py`’s branch coverage output
 
 ## Coverage improvement
 
-Show the comments that describe the requirements for the coverage.
+### Function 1: Panel `__rich_console__` (Filip)
 
-Report of old coverage: [link]
+**Before (baseline):** `__rich_console__` 78% total (57% branch), `align_text` 62% total (50% branch). DIY: 11/14 branches covered (78.6%), 3 missed (`align == "left"`, other alignment, no excess space).
 
-Report of new coverage: [link]
+**Tests added:**
 
-Test cases added:
+[Test file](https://github.com/DD2480-2026-Group-8/rich-Assignment-3/blob/master/tests/test_panel.py).
 
-git diff ...
+- `test_panel_title_left_align` — Panel with `title_align="left"` and styled title. Covers the `"left"` branch and `if text.style:`.
+- `test_panel_title_center_align` — Panel with `title_align="center"` and styled title. Covers the `"center"` branch and `if text.style:`.
+
+**After (coverage.py):** `__rich_console__` **100%**, `align_text` **81%** (75% branch). File total: **97%** (up from 71%). Remaining gap in `align_text`: "no excess space" and "other alignment" edge cases.
+
+
+### Function 3: Containers `justify` (Anna)
+
+**Before (baseline):** `justify` 97% total (92% branch). DIY: 11/13 branches covered (84.6%), 2 missed (no spaces and text is smaller than width).
+
+**Tests added:**
+
+[Test file](https://github.com/DD2480-2026-Group-8/rich-Assignment-3/blob/master/tests/test_containers.py).
+
+- `test_justify_full_no_spaces` — Justifies text with no space with `justify="full"`.
+- `test_justify_text_shorter_than_width` — Justifies text with `justify="full"` with given width higher than the width of text, extra padding added.
+
+**After (coverage.py):** `justify` **98%**, or **100%** based on diy-coverage tool. File total: **99%** (up from 98%). 
+
+### Additional Tests: text `expand_tabs` (Anna, for P+)
+
+**Before (baseline):** `expand_tabs` 91% total (88% branch). 2 missed (missing test for no `tab_size` input and tab handling with multiple lines).
+
+**Tests added:**
+
+[Test file](https://github.com/DD2480-2026-Group-8/rich-Assignment-3/blob/anna-extra/tests/test_text.py).
+
+- `test_tabs_to_spaces_no_tab_size` — Tests for text input with no `tab_size` passed, `tab_size` defaults to 8.
+- `test_tabs_to_spaces_n_separator` — Tests for text input with new line
+
+**After (coverage.py):** `expand_tabs` **100%**.  
 
 Number of test cases added: two per team member (P) or at least four (P+).
 
