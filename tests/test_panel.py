@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
+from rich.logging import LogRender
 
 tests = [
     Panel("Hello, World", padding=0),
@@ -27,6 +28,33 @@ expected = [
     "╭───────────────────── FOO ──────────────────────╮\n│Hello, World                                    │\n╰────────────────────────────────────────────────╯\n",
     "╭────────────────────────────────────────────────╮\n│Hello, World                                    │\n╰───────────────────── FOO ──────────────────────╯\n",
 ]
+
+
+
+### NEWTEST
+
+def test_logrender_path_without_line_number():
+    # Requirement: When show_path is enabled and a path is provided, but line_no is None,
+    # the output must include the path and must NOT include a ":<line number>" suffix.
+    console = Console(record=True)
+
+    lr = LogRender(show_time=False, show_level=False, show_path=True)
+
+    table = lr(
+        console=console,
+        renderables=[Text("msg")],
+        path="file.py",
+        line_no=None,      # <-- forces the "line_no falsy" branch (B18)
+        link_path=None,
+    )
+
+    console.print(table)
+    out = console.export_text()
+
+    assert "msg" in out
+    assert "file.py" in out
+    assert "file.py:" not in out
+### NEWTEST
 
 
 def render(panel, width=50) -> str:

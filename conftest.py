@@ -1,7 +1,7 @@
 def pytest_sessionfinish(session, exitstatus):
-    # Adjust import to the module that contains BRANCH_COVERAGE
+    # For Loop for printing branches
     from rich._log_render import BRANCH_COVERAGE
 
-    print("\n=== DIY BRANCH COVERAGE ===")
-    for bid in sorted(BRANCH_COVERAGE):
-        print(f"{bid}: {BRANCH_COVERAGE[bid]}")
+    print("\n BRANCH COVERAGE FOR DIY:")
+    for i in (BRANCH_COVERAGE):
+        print(f"{i}: {BRANCH_COVERAGE[i]}")
