@@ -26,6 +26,19 @@ from .measure import Measurement
 
 T = TypeVar("T")
 
+import atexit
+JUSTIFY_BRANCHES = [0] * 12   # one flag per branch; 0 = not taken, 1 = taken
+
+def report_justify_coverage() -> None:
+    """Print branch coverage for justify() to stdout."""
+    print("Branch Coverage Report for Containers.justify:")
+    print("-" * 60)
+    for idx, count in enumerate(JUSTIFY_BRANCHES):
+        status = "Covered" if count > 0 else "MISSED"
+        print(f"Branch {idx}: {status} (Hits: {count})")
+    print("=" * 60)
+
+atexit.register(report_justify_coverage)
 
 class Renderables:
     """A list subclass which renders its contents to the console."""
@@ -107,7 +120,7 @@ class Lines:
 
     def pop(self, index: int = -1) -> "Text":
         return self._lines.pop(index)
-
+    
     def justify(
         self,
         console: "Console",
@@ -127,41 +140,56 @@ class Lines:
         from .text import Text
 
         if justify == "left":
+            JUSTIFY_BRANCHES[0] = 1 #justify left checked 
             for line in self._lines:
                 line.truncate(width, overflow=overflow, pad=True)
         elif justify == "center":
+            JUSTIFY_BRANCHES[1] = 1 #justify center checked
             for line in self._lines:
                 line.rstrip()
                 line.truncate(width, overflow=overflow)
                 line.pad_left((width - cell_len(line.plain)) // 2)
                 line.pad_right(width - cell_len(line.plain))
         elif justify == "right":
+            JUSTIFY_BRANCHES[2] = 1 #justify right checked
             for line in self._lines:
                 line.rstrip()
                 line.truncate(width, overflow=overflow)
                 line.pad_left(width - cell_len(line.plain))
         elif justify == "full":
+            JUSTIFY_BRANCHES[3] = 1#justify full 
             for line_index, line in enumerate(self._lines):
                 if line_index == len(self._lines) - 1:
+                    JUSTIFY_BRANCHES[4] = 1 #last line, full skipped
                     break
+                JUSTIFY_BRANCHES[5] = 1 #not last line
                 words = line.split(" ")
                 words_size = sum(cell_len(word.plain) for word in words)
                 num_spaces = len(words) - 1
                 spaces = [1 for _ in range(num_spaces)]
                 index = 0
                 if spaces:
+                    JUSTIFY_BRANCHES[6] = 1 #spaces in the text
                     while words_size + num_spaces < width:
+                        JUSTIFY_BRANCHES[8] = 1 #text shorter than width
                         spaces[len(spaces) - index - 1] += 1
                         num_spaces += 1
                         index = (index + 1) % len(spaces)
+                    JUSTIFY_BRANCHES[9] = 1 #after the while loop
+                else:
+                    JUSTIFY_BRANCHES[7] = 1 #no spaces in the text
                 tokens: List[Text] = []
                 for index, (word, next_word) in enumerate(
                     zip_longest(words, words[1:])
                 ):
                     tokens.append(word)
                     if index < len(spaces):
+                        JUSTIFY_BRANCHES[10] = 1 #not the last word
                         style = word.get_style_at_offset(console, -1)
                         next_style = next_word.get_style_at_offset(console, 0)
                         space_style = style if style == next_style else line.style
                         tokens.append(Text(" " * spaces[index], style=space_style))
+                    else:
+                        JUSTIFY_BRANCHES[11] = 1 #last word
                 self[line_index] = Text("").join(tokens)
+   
