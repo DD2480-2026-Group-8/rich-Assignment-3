@@ -747,6 +747,15 @@ def test_tabs_to_spaces():
     assert text.plain == "No Tabs"
     assert text.style == "bold"
 
+def test_tabs_to_spaces_no_tab_size():
+    text = Text("\tHello\tWorld")
+    text.expand_tabs()
+    assert text.plain == "        Hello   World"
+
+def test_tabs_to_spaces_n_separator_no_tab():
+    text = Text("Hello\n\tWorld", tab_size = 1)
+    text.expand_tabs()
+    assert text.plain == "Hello\n World"
 
 @pytest.mark.parametrize(
     "markup,tab_size,expected_text,expected_spans",
