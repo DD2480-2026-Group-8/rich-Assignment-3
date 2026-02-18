@@ -3,6 +3,8 @@ from rich.containers import Lines, Renderables
 from rich.text import Span, Text
 from rich.style import Style
 
+   
+
 
 def test_renderables_measure():
     console = Console()
@@ -52,6 +54,30 @@ def test_lines_justify():
         Text(
             "foo bar",
             spans=[Span(0, 3, "b"), Span(3, 4, Style.parse("bold")), Span(4, 7, "b")],
+        ),
+        Text("test"),
+    ]
+
+def test_justify_full_no_spaces():
+    """Whike loop body in 'full' not entered because there are no spaces in the text."""
+    console = Console()
+    lines = Lines([Text("foo", style="b"), Text("test", style="b")])
+    lines.justify(console, 10, justify="full")
+    assert lines._lines == [
+        Text("foo", spans=[Span(0, 3, "b")]),
+        Text("test", style="b"),
+    ]
+
+
+def test_justify_text_shorter_than_width():
+    """Text is shorter than the given width, extra padding needed."""
+    console = Console()
+    lines = Lines([Text("foo bar", style="b"), Text("test", style="b")])
+    lines.justify(console, 20, justify="full")
+    assert lines._lines == [
+        Text(
+            "foo              bar",
+            spans=[Span(0, 3, "b"), Span(3, 17, Style.parse("bold")), Span(17, 20, "b")],
         ),
         Text("test"),
     ]
