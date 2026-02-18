@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
-from rich.logging import LogRender
+
 
 tests = [
     Panel("Hello, World", padding=0),
