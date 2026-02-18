@@ -10,6 +10,24 @@ from .segment import Segment
 from .style import Style, StyleType
 from .text import Text, TextType
 
+# Manual instrumentation for DIY branch coverage (Function 1)
+import atexit
+
+PANEL_COVERAGE_COUNTS = [0] * 14
+
+
+def report_panel_coverage() -> None:
+    """Report which branches in Panel.__rich_console__ were executed."""
+    print("Branch Coverage Report for Panel.__rich_console__:")
+    print("-" * 60)
+    for idx, count in enumerate(PANEL_COVERAGE_COUNTS):
+        status = "Covered" if count > 0 else "MISSED"
+        print(f"Branch {idx}: {status} (Hits: {count})")
+    print("=" * 60)
+
+
+atexit.register(report_panel_coverage)
+
 if TYPE_CHECKING:
     from .console import Console, ConsoleOptions, RenderableType, RenderResult
 
@@ -175,10 +193,13 @@ class Panel(JupyterMixin):
             text.truncate(width)
             excess_space = width - cell_len(text.plain)
             if text.style:
+                PANEL_COVERAGE_COUNTS[0] += 1  # text has style
                 text.stylize(console.get_style(text.style))
 
             if excess_space:
+                PANEL_COVERAGE_COUNTS[1] += 1  # there is excess space
                 if align == "left":
+                    PANEL_COVERAGE_COUNTS[2] += 1  # left alignment
                     return Text.assemble(
                         text,
                         (character * excess_space, style),
@@ -186,6 +207,7 @@ class Panel(JupyterMixin):
                         end="",
                     )
                 elif align == "center":
+                    PANEL_COVERAGE_COUNTS[3] += 1  # center alignment
                     left = excess_space // 2
                     return Text.assemble(
                         (character * left, style),
@@ -195,16 +217,20 @@ class Panel(JupyterMixin):
                         end="",
                     )
                 else:
+                    PANEL_COVERAGE_COUNTS[4] += 1  # other alignment
                     return Text.assemble(
                         (character * excess_space, style),
                         text,
                         no_wrap=True,
                         end="",
                     )
+            else:
+                PANEL_COVERAGE_COUNTS[5] += 1  # no excess space
             return text
 
         title_text = self._title
         if title_text is not None:
+            PANEL_COVERAGE_COUNTS[6] += 1  # title present
             title_text.stylize_before(border_style)
 
         child_width = (
@@ -216,8 +242,10 @@ class Panel(JupyterMixin):
         )
         child_height = self.height or options.height or None
         if child_height:
+            PANEL_COVERAGE_COUNTS[7] += 1  # height adjusted
             child_height -= 2
         if title_text is not None:
+            PANEL_COVERAGE_COUNTS[8] += 1  # width adjusted for title
             child_width = min(
                 options.max_width - 2, max(child_width, title_text.cell_len + 2)
             )
@@ -232,8 +260,10 @@ class Panel(JupyterMixin):
         line_end = Segment(f"{box.mid_right}", border_style)
         new_line = Segment.line()
         if title_text is None or width <= 4:
+            PANEL_COVERAGE_COUNTS[9] += 1  # simple top border
             yield Segment(box.get_top([width - 2]), border_style)
         else:
+            PANEL_COVERAGE_COUNTS[10] += 1  # top border with title
             title_text = align_text(
                 title_text,
                 width - 4,
@@ -254,11 +284,14 @@ class Panel(JupyterMixin):
 
         subtitle_text = self._subtitle
         if subtitle_text is not None:
+            PANEL_COVERAGE_COUNTS[11] += 1  # subtitle present
             subtitle_text.stylize_before(border_style)
 
         if subtitle_text is None or width <= 4:
+            PANEL_COVERAGE_COUNTS[12] += 1  # simple bottom border
             yield Segment(box.get_bottom([width - 2]), border_style)
         else:
+            PANEL_COVERAGE_COUNTS[13] += 1  # bottom border with subtitle
             subtitle_text = align_text(
                 subtitle_text,
                 width - 4,
