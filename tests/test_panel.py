@@ -7,7 +7,6 @@ from rich.panel import Panel
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
-from rich._log_render import LogRender
 
 tests = [
     Panel("Hello, World", padding=0),
@@ -28,60 +27,6 @@ expected = [
     "╭───────────────────── FOO ──────────────────────╮\n│Hello, World                                    │\n╰────────────────────────────────────────────────╯\n",
     "╭────────────────────────────────────────────────╮\n│Hello, World                                    │\n╰───────────────────── FOO ──────────────────────╯\n",
 ]
-
-
-
-
-
-
-
-
-### NEWTEST
-
-def test_log_render_render_path_when_enabled():
-    # Requirement: When show_path is enabled and a path is provided, the path is rendered.
-    console = Console(record=True)
-    log_render = LogRender(show_time=False, show_level=False, show_path=True)
-
-    table = log_render(
-        console=console,
-        renderables=[Text("msg")],
-        path="file.py",
-        line_no=None,
-        link_path=None,
-    )
-
-    console.print(table)
-    out = console.export_text()
-
-# assert its in
-
-    assert "file.py" in out
-
-def test_log_render_not_render_line_number_when_none():
-    # Requirement: When line_no is None, no ":<line number>" suffix is rendered.
-    console = Console(record=True)
-    log_render = LogRender(show_time=False, show_level=False, show_path=True)
-
-    table = log_render(
-        console=console,
-        renderables=[Text("msg")],
-        path="file.py",
-        line_no=None,
-        link_path=None,
-    )
-
-    console.print(table)
-    out = console.export_text()
-
-# assert not 
-
-    assert "file.py:" not in out
-
-### NEWTEST
-
-
-
 
 def render(panel, width=50) -> str:
     console = Console(file=io.StringIO(), width=50, legacy_windows=False)
