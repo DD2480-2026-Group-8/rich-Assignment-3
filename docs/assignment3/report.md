@@ -45,7 +45,7 @@ Did it build and run as documented?
 | 80   | 16  | 499   | 3     | 135    | `__rich_console__` @141-275 @ `rich/panel.py` (Panel)  |
 | 52   | 17  | 348   | 9     | 55     | `__call__` @32-86 @ `rich/_log_render.py` (Log render) |
 | 47   | 17  | 379   | 5     | 57     | `justify` @111-167 @ `rich/containers.py` (Containers) |
-| 29   | 17  | 220   | 2     | 59     | `ratio_resolve` @14-72 @ `rich/_ratio.py` (Ratio)      |
+| 29   | 17  | 220   | 2     | 59     | `__rich_console__` @156-198 @ `rich/progress_bar.py` (Progress bar) |
 | 34   | 17  | 213   | 1     | 37     | `stop` @145-181 @ `rich/live.py` (Live)                |
 
 Lizard columns: NLOC = non-comment lines of code, CCN = cyclomatic complexity number, token = tokens, PARAM = parameter count, length = length in lines.
@@ -74,20 +74,37 @@ In @141-275 @ `rich/panel.py`
 
 5. **Is the documentation clear about all the different outcomes?** The inner helper `align_text` has a short docstring that explains its role. The main function does not have a docstring that lists every branch (for example, all three alignment options or when the title or subtitle are present or missing). To understand all possible outcomes, we had to read the code. So the docs help a bit, but they are not enough on their own for someone who wants to see every path the code can take.
 
-## Function 4: **ratio_resolve** (Ratio)
-In @14-72 @ `rich/_ratio.py`
+
+## Function 3: **justify** (Containers)
+
+In @111-167 @ `rich/containers.py`
 
 1. **Did the tool and our manual count match?**
-   - Lizard reports cyclomatic complexity 17 for this function. 
-   - Jingze manually counted 17: a base complexity of 1, plus contributions from explicit control flow (while, if, and for loops) of 5, comprehensions/generators of 6, and boolean/ternary operators of 5. The counts matched.
+   - The tool (lizard) reports cyclomatic complexity 17 for this function.
+   - Anna counted by hand: counting each if/else/elif and each control structure like for and while loops I counted 17. The tool and our manual count give the same result.
+
+2. **Is the function only complex, or also long?** It is more complex than long. The function is 47 non-comment lines (57 lines in total in the file). The complexity (17) comes from many branches responsinble for justification: the nature of justification gives us four branches to begin with: left, right, center and full. Full justification has more branches as it's correctness depends on spaces in the text. The code is not very long, but it has a lot of decision points.
+
+3. **What does the function do?** This function justifies and overflows text according to a given width. It uses one of four alignment strategies: left, right, center or full. 
+
+4. **Do we count exceptions (try/except)?** In this function there are no try/except blocks. So when we count branches, we only count if/else and similar. The tool (lizard) and our manual count therefore agree, we did not have to decide how to count exception handlers here.
+
+5. **Is the documentation clear about all the different outcomes?** The docstring explains what the funstion does generally, but leaves out some details. For example, knowledge of overflow modes is assumed, as they are named but not explained. Another thing not documented is that 'full' skips the last line and therefore the last line defaults to the left justification. 
+
+## Function 4: **rich_console** (Progress bar)
+In @156-198 @ `rich/progress_bar.py`
+
+1. **Did the tool and our manual count match?**
+   - Lizard reports cyclomatic complexity 21 for this function. 
+   - Jingze manually counted 21: a base complexity of 1, plus contributions from explicit control flow (if) of 9, and boolean/ternary operators of 11. The counts matched.
 2. **Is the function only complex, or also long?** 
    
-   It is only complex, not long. The function only has about 25 lines of actual executable code. However, it has a high logic density. Almost every line performs a calculation involving a conditional check or an iteration.
+   It is only complex, not long. The function only has about 40 lines of actual executable code. However, it has a high logic density. Almost every line performs a calculation involving a conditional check or an iteration.
 3. **What does the function do?** 
    
-   The function implements a layout resolution algorithm. Its purpose is to divide the `total` space among a list of `Edge` objects.
+   This is the core rendering method for the `ProgressBar` widget. It generates the `Segment` objects (text + style) that the console displays.
 
-   It handles complex constraints: some edges have fixed sizes, some have minimum sizes, and others expand based on ratios. The algorithm iterates to resolve flexible edges, ensuring that if an edge shrinks below its minimum, it gets locked to that minimum, triggering a recalculation of the remaining space.
+   It handles determining the width and mode (ASCII/Unicode) and deciding whether to show a "Pulse" animation (for indeterminate progress) or a standard bar; furthermore, it calculates exactly how many "full bars", "half bars", and "empty spaces" are needed based on the completion percentage, while selecting the correct colors and styles for each part (completed, finished, remaining).
 
 4. **Do we count exceptions (try/except)?** 
    
@@ -95,9 +112,7 @@ In @14-72 @ `rich/_ratio.py`
 
 5. **Is the documentation clear about all the different outcomes?** 
 
-   The docstring is clear about the goal and the primary edge case (where the sum of minimums exceeds the total).
-
-   However, it doesn’t explain what happens inside the loop. it doesn’t explain how the ratio-based sizes are turned into whole numbers, or how the function deals with rounding in the final step (via `Fraction` and a carried `remainder` in the final pass). One must read the code to understand these specific behaviors.
+   The class has a docstring, but this specific method does not. The logic for handling "half bars" and the specific condition for when to draw the "remaining" empty bar (only when color is enabled) is implicit in the code and not explained in documentation.
 
 ## Refactoring
 
@@ -106,7 +121,14 @@ Plan for refactoring complex code:
 **Function 1 (Panel `__rich_console__`):** Move the inner function `align_text` out.
 
 The inner function `align_text` (left/center/right and the `if excess_space` / `if text.style` branches) can become a private method on the class, e.g. `_align_text(...)`, or a module-level helper. Then `__rich_console__` no longer “contains” those branches for cyclomatic complexity, the main method just calls it.
-Estimated impact of refactoring (lower CC, but other drawbacks?): **Lower CC** in the main method. **Possible drawbacks:** one extra method to maintain; behaviour unchanged.
+
+**Estimated impact of refactoring** (lower CC, but other drawbacks?): **Lower CC** in the main method. **Possible drawbacks:** one extra method to maintain; behaviour unchanged.
+
+**Function 3 (Containers `justify`):** Extract 4 justification branches.
+
+This strategy is quite obvious with this function. Justification has 4 modes and all of them are performed in one function right now. Extracting these branches into 4 separate methods (`_justify_left`, `_justify_right`, `_justify_center` `_justify_full`) will leave us with cyclomatic complexity of ~5. `_justify_full` will still be the most complex, but its CCN should be under 10.
+
+**Estimated impact of refactoring** (lower CC, but other drawbacks?): **Lower CC** in the main method. **Possible drawbacks:** four extra method to maintain; behaviour unchanged.
 
 Carried out refactoring (optional, P+):
 

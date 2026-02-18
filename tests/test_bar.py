@@ -91,7 +91,7 @@ def test_get_pulse_segments():
     ]
     assert segments == expected
 
-
+    
 if __name__ == "__main__":
     bar = ProgressBar(completed=11, width=50)
     bar_render = render(bar)
