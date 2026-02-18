@@ -16,14 +16,30 @@ import atexit
 PANEL_COVERAGE_COUNTS = [0] * 14
 
 
-def report_panel_coverage() -> None:
-    """Report which branches in Panel.__rich_console__ were executed."""
-    print("Branch Coverage Report for Panel.__rich_console__:")
-    print("-" * 60)
+def report_panel_coverage():
+    print("Branch Coverage Report for Function 1:")
+    print("-" * 52)
+
+    total = len(PANEL_COVERAGE_COUNTS)
+    covered = 0
+
     for idx, count in enumerate(PANEL_COVERAGE_COUNTS):
         status = "Covered" if count > 0 else "MISSED"
-        print(f"Branch {idx}: {status} (Hits: {count})")
-    print("=" * 60)
+        if count > 0:
+            covered += 1
+        print(f"Branch {idx}: {status}")
+
+    print("-" * 52)
+
+    if total > 0:
+        percentage = (covered / total) * 100
+    else:
+        percentage = 100.0
+
+    print(f"Total branches : {total}")
+    print(f"Covered        : {covered}")
+    print(f"Branch coverage: {percentage:.2f}%")
+    print("=" * 52)
 
 
 atexit.register(report_panel_coverage)

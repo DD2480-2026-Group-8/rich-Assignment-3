@@ -16,16 +16,16 @@ import atexit
 
 import atexit
 
-COVERAGE_COUNTS = [0] * 14 
+BAR_COVERAGE_COUNTS = [0] * 14 
 
-def report_coverage():
+def report_bar_coverage():
     print("Branch Coverage Report for Function 4:")
     print("-" * 52)
 
-    total = len(COVERAGE_COUNTS)
+    total = len(BAR_COVERAGE_COUNTS)
     covered = 0
 
-    for idx, count in enumerate(COVERAGE_COUNTS):
+    for idx, count in enumerate(BAR_COVERAGE_COUNTS):
         status = "Covered" if count > 0 else "MISSED"
         if count > 0:
             covered += 1
@@ -43,7 +43,7 @@ def report_coverage():
     print(f"Branch coverage: {percentage:.2f}%")
     print("=" * 52)
 
-atexit.register(report_coverage)
+atexit.register(report_bar_coverage)
 
 # Number of characters before 'pulse' animation repeats
 PULSE_SIZE = 20
@@ -194,11 +194,11 @@ class ProgressBar(JupyterMixin):
         ascii = options.legacy_windows or options.ascii_only
         should_pulse = self.pulse or self.total is None
         if should_pulse:
-            COVERAGE_COUNTS[0] += 1
+            BAR_COVERAGE_COUNTS[0] += 1
             yield from self._render_pulse(console, width, ascii=ascii)
             return
         else:
-            COVERAGE_COUNTS[1] += 1
+            BAR_COVERAGE_COUNTS[1] += 1
 
         completed: Optional[float] = (
             min(self.total, max(0, self.completed)) if self.total is not None else None
@@ -225,40 +225,40 @@ class ProgressBar(JupyterMixin):
 
         _Segment = Segment
         if bar_count:
-            COVERAGE_COUNTS[2] += 1
+            BAR_COVERAGE_COUNTS[2] += 1
             yield _Segment(bar * bar_count, complete_style)
         else:
-            COVERAGE_COUNTS[3] += 1
+            BAR_COVERAGE_COUNTS[3] += 1
 
         if half_bar_count:
-            COVERAGE_COUNTS[4] += 1
+            BAR_COVERAGE_COUNTS[4] += 1
             yield _Segment(half_bar_right * half_bar_count, complete_style)
         else:
-            COVERAGE_COUNTS[5] += 1
+            BAR_COVERAGE_COUNTS[5] += 1
 
         if not console.no_color:
-            COVERAGE_COUNTS[6] += 1
+            BAR_COVERAGE_COUNTS[6] += 1
             remaining_bars = width - bar_count - half_bar_count
             
             if remaining_bars and console.color_system is not None:
-                COVERAGE_COUNTS[8] += 1
+                BAR_COVERAGE_COUNTS[8] += 1
                 
                 if not half_bar_count and bar_count:
-                    COVERAGE_COUNTS[10] += 1
+                    BAR_COVERAGE_COUNTS[10] += 1
                     yield _Segment(half_bar_left, style)
                     remaining_bars -= 1
                 else:
-                    COVERAGE_COUNTS[11] += 1 
+                    BAR_COVERAGE_COUNTS[11] += 1 
 
                 if remaining_bars:
-                    COVERAGE_COUNTS[12] += 1
+                    BAR_COVERAGE_COUNTS[12] += 1
                     yield _Segment(bar * remaining_bars, style)
                 else:
-                    COVERAGE_COUNTS[13] += 1 
+                    BAR_COVERAGE_COUNTS[13] += 1 
             else:
-                COVERAGE_COUNTS[9] += 1 
+                BAR_COVERAGE_COUNTS[9] += 1 
         else:
-            COVERAGE_COUNTS[7] += 1
+            BAR_COVERAGE_COUNTS[7] += 1
 
     def __rich_measure__(
         self, console: Console, options: ConsoleOptions
