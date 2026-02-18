@@ -284,5 +284,3 @@ if __name__ == "__main__":  # pragma: no cover
         time.sleep(0.05)
     console.show_cursor(True)
     console.print()
-
-    report_coverage()
