@@ -83,7 +83,7 @@ In @14-94 @ `rich/_log_render.py`
    - I counted by hand and got 16. 
 
 2. **Is the function only complex, or also long?** 
-   The function is complex, thare are many if and else statments. The function is also 95 lines so its somewhat long. 
+   The function is complex, there are many if and else statments. The function is also 95 lines so its somewhat long. 
 
 3. **What does the function do?**
    The function creates a table grid for one log entry, with more columns too. 
@@ -92,7 +92,7 @@ In @14-94 @ `rich/_log_render.py`
    In this function there are no try/except blocks. So when we count branches so we only count if/else and similar.
 
 5. **Is the documentation clear about all the different outcomes?**
-   The documentation explains what the code does except for some edge cases, like what happens if path is not enabled. 
+   The documentation explains what logging does, but not the details of the code.
 
 ## Function 3: **justify** (Containers)
 
