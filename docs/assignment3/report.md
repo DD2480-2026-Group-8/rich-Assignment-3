@@ -74,6 +74,26 @@ In @141-275 @ `rich/panel.py`
 
 5. **Is the documentation clear about all the different outcomes?** The inner helper `align_text` has a short docstring that explains its role. The main function does not have a docstring that lists every branch (for example, all three alignment options or when the title or subtitle are present or missing). To understand all possible outcomes, we had to read the code. So the docs help a bit, but they are not enough on their own for someone who wants to see every path the code can take.
 
+## Function 2: **_log_render** (Call)
+
+In @14-94 @ `rich/_log_render.py`
+
+1. **Did the tool and our manual count match?**
+   - The lizard tool reports a CC of 16 for this function.
+   - I counted by hand and got 16. 
+
+2. **Is the function only complex, or also long?** 
+   The function is complex, thare are many if and else statments. The function is also 95 lines so its somewhat long. 
+
+3. **What does the function do?**
+   The function creates a table grid for one log entry, with more columns too. 
+
+4. **Do we count exceptions (try/except)?** 
+   In this function there are no try/except blocks. So when we count branches so we only count if/else and similar.
+
+5. **Is the documentation clear about all the different outcomes?**
+   The documentation explains what the code does except for some edge cases, like what happens if path is not enabled. 
+
 ## Function 3: **justify** (Containers)
 
 In @111-167 @ `rich/containers.py`
@@ -124,6 +144,10 @@ Plan for refactoring complex code:
 The inner function `align_text` (left/center/right and the `if excess_space` / `if text.style` branches) can become a private method on the class, e.g. `_align_text(...)`, or a module-level helper. Then `__rich_console__` no longer “contains” those branches for cyclomatic complexity, the main method just calls it.
 
 **Estimated impact of refactoring** (lower CC, but other drawbacks?): **Lower CC** in the main method. **Possible drawbacks:** one extra method to maintain; behaviour unchanged.
+
+**Function 2 (Call `_log_render`):** 
+
+Else statments inside of if statments create many paths right now. Remove the if else statments by replacing them with a function that recieves the correct string or function. This will reduce cyclomatic complexity. 
 
 **Function 3 (Containers `justify`):** Extract 4 justification branches.
 
@@ -191,6 +215,9 @@ The results are largely consistent with `coverage.py`’s branch coverage output
 **After (DIY):** 12/14 branches covered (**85.7%**), 2 still missed (other alignment, no excess space).
 
 Note: coverage.py treats `align_text` as a separate function, so `__rich_console__` shows 100%. Our DIY tool counts all 14 branches (including those inside `align_text`) together, so the 2 missed branches from `align_text` bring the DIY total to 85.7%. The missed branches are the same in both tools.
+
+### Function 2: Call `_log_render` (Erik)
+**Before (baseline):** `_log_render` 98% total (94% branch). DIY: 17/18 branches covered (94.4%), 1 missed.
 
 ### Function 3: Containers `justify` (Anna)
 
