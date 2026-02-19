@@ -47,6 +47,7 @@ Did it build and run as documented?
 | 47   | 17  | 379   | 5     | 57     | `justify` @111-167 @ `rich/containers.py` (Containers)              |
 | 29   | 17  | 220   | 2     | 59     | `__rich_console__` @156-198 @ `rich/progress_bar.py` (Progress bar) |
 | 34   | 17  | 213   | 1     | 37     | `stop` @145-181 @ `rich/live.py` (Live)                             |
+| 52   | 17  | 348   | 9     | 55     |  `__call_` @32-86@ `rich/_log_render.py` (Call)                     |
 
 Lizard columns: NLOC = non-comment lines of code, CCN = cyclomatic complexity number, token = tokens, PARAM = parameter count, length = length in lines.
 
@@ -76,7 +77,7 @@ In @141-275 @ `rich/panel.py`
 
 ## Function 2: **_log_render** (Call)
 
-In @14-94 @ `rich/_log_render.py`
+In @32-86 @ `rich/_log_render.py`
 
 1. **Did the tool and our manual count match?**
    - The lizard tool reports a CC of 16 for this function.
